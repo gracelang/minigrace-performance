@@ -134,16 +134,16 @@ Notice that the confidential checks are no longer being performed, because the m
 
 I think that the answer to this question is "yes", but some problems have to be solved along the way.
 
-    1. Avoiding name clashes with JavaScript object properties.
-    2. How to perform confidentiality checks
-    3. How to implement early returns
-    4. How to save and restore line numbers
-    5. How to deal with raised exceptions
-    6. How to deal with `NoSuchMethod` and undefined target errors.
+ 1. How to avoiding name clashes with JavaScript object properties? 
+ 2. How to perform confidentiality checks? 
+ 3. How to implement early returns?
+ 4. How to save and restore line numbers?
+ 5. How to deal with raised exceptions?
+ 6. How to deal with `NoSuchMethod` and undefined target errors?
 
 ### Avoiding Name Clashes
 
-Prefix or suffix each Grace method name with a unique sigil, such as `_G_`, `𝒢` or `Ⓖ`.  (Putting symbols that are not easily typed at the end of the name would make using the debugger easier, because they would autocomplete.  Putting the sigil at the beginning has the advantage of placing the Grace methods together in an alphabetical listing.  
+Prefix or suffix each Grace method name with a unique sigil, such as `_G_`, `𝒢` or `Ⓖ`.  (Putting symbols that are not easily typed at the end of the name would make using the debugger easier, because they would autocomplete.  Putting the sigil at the beginning has the advantage of placing the Grace methods together in an alphabetical listing.)  
 
 ### Confidentiality
 
