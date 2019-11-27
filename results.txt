@@ -1,0 +1,35 @@
+## with try:
+
+initially, 527 executions of benchmark code
+after removing outliers, n = 476; standard deviation (σ) = 1.137276; 8 measurements > 2.5 σ above mean
+average = 18.152143, quartiles = [16.605, 17.2, 17.805, 18.87, 21.36]; iqr = 1.67
+median result: 42439 requests in 17.805 ms = 2384 requests/ms
+
+## without checks for undefined values
+
+initially, 574 executions of benchmark code
+after removing outliers, n = 510; standard deviation (σ) = 0.394322; 8 measurements > 2.5 σ above mean
+average = 17.031088, quartiles = [16.395, 16.685, 17.045, 17.32, 18.27]; iqr = 0.635
+median result: 42439 requests in 17.045 ms = 2490 requests/ms
+
+## without try:
+
+initially, 844 executions of benchmark code
+after removing outliers, n = 754; standard deviation (σ) = 0.704692; 3 measurements > 2.5 σ above mean
+average = 11.356054, quartiles = [10.155, 10.81, 11.205, 11.8, 13.22]; iqr = 0.99
+median result: 42439 requests in 11.205 ms = 3788 requests/ms
+
+## inlined:
+
+initially, 1271 executions of benchmark code
+after removing outliers, n = 1097; standard deviation (σ) = 0.556705; 14 measurements > 2.5 σ above mean
+average = 7.294239, quartiles = [6.47, 6.83, 7.195, 7.625, 8.81]; iqr = 0.795
+median result: 42439 requests in 7.195 ms = 5898 requests/ms
+
+## inlined in oo-style (no methods objects)
+
+initially, 1721 executions of benchmark code
+after removing outliers, n = 1573; standard deviation (σ) = 0.284834; 16 measurements > 2.5 σ above mean
+21 < 2.5 σ below mean
+average = 5.578198, quartiles = [4.765, 5.36, 5.535, 5.76, 6.35]; iqr = 0.4
+median result: 42439 requests in 5.535 ms = 7667 requests/ms
