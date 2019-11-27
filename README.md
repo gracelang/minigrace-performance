@@ -172,13 +172,14 @@ If the return is to the current stack frame, the inline code must clear the retu
 
 Note that the destination of a return *must* be a context that created a block object containing a **`return`** statement.  So the check can be simplified in many contexts, since they cannot be the target of the return.
 
-The Pyrate implementors have used a scheme like this; it is apparently less expensive than using exception handlers.
+The Pyret implementors have used a scheme like this; it is apparently less expensive than using exception handlers.
+[Joe Gibbs Politz, Personal Communication]
 
 ### Saving and restoring line numbers
 
-Restoring line numbers is easy; the compiler already knows the line number that applies following a method request, and can simply insert a `setLineNumber` call into the compiled code.
+Restoring line numbers is easy; the compiler already knows the line number that applies following a method request, and can simply insert a `setLineNumber` call into the compiled code, with the correct numeral as argument.
 
-The rationale for zeroing the line number before calling a method is that there are no `setLineNumber` requests inside handwritten method bodies.  Line number zero is used to suppress line number messages in the debugging output. This is actually unnecessary: such methods are already recognizable as being from native code; this should be sufficient to suppress line numbers from debugging output.
+The rationale for zeroing the line number before calling a method is that there are no `setLineNumber` requests inside hand-written method bodies.  Line number zero is used to suppress line number messages in the debugging output. This is actually unnecessary: such methods are already recognizable as being from native code; this should be sufficient to suppress line numbers from debugging output.
 
 Thus, saving and restoring line numbers need not be a function of the `request` code sequence.
 
