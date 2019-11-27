@@ -38,7 +38,7 @@ method time(aBlock) {
 }
 ```
 
-The methods of the performance module are applied to a benchmark that exercises Grace's method request.  All object-oriented languages have method request — variously called message send or method invocation — as their basic operation.  Thus, is anything is to be fast, method request must be fast.  Our chosen benchmark is the Ackermann function.
+The methods of the performance module are applied to a benchmark that exercises Grace's method request.  All object-oriented languages have method request — variously called message send or method invocation — as their basic operation.  Thus, if anything is to be fast, method request must be fast.  Our chosen benchmark is the Ackermann function, because it uses method request *a lot*.
 
 ## Module *ackermann_plain*
 
@@ -47,7 +47,7 @@ This is a simple implementation of the 2-argument Ackermann function, along with
 ```
 performance.summarize(performance.benchmark{ ackermann(3,5) })
 ```
-In version 4743 of _minigrace_, `ackermann(3,5)` executes 42439 method requests and takes around 17 seconds, showing an execution speed of around 2400 requests/ms.
+In version 4743 of _minigrace_, `ackermann(3,5)` executes 42439 method requests and takes around 17 ms, showing an execution speed of around 2400 requests/ms.
 
 The normal implementation of method request is via the function `request` (defined in "js/gracelib.js"), which looks like this:
 
@@ -83,7 +83,7 @@ This function
     2. checks if the requested method is confidential, by looking at the method function's `confidential` property.
     3. applies the method function to `obj` and the arguments.
 
-A second function `selfRequest`, does essentially the same thing, but omits the check for confidentiality.  The `selfRequest` function is used when compiling requests on self.
+A second function, `selfRequest`, does essentially the same thing, but omits the check for confidentiality.  The `selfRequest` function is used when compiling requests on self.
 
 The functions `request` and `selfRequest` do all of this inside a `try…catch…finally`; if something goes wrong, and an exception is raised, the catch clause then figures out why.
 
