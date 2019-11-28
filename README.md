@@ -2,7 +2,7 @@
 
 This repository records the results of some preliminary experiments that examine ways to speed-up method request in _minigrace_.
 
-## The module "perfromance"
+## The module "performance"
 
 The *performance* module contains benchmarking code used to estimate speedup.  It is intended to measure the speed of the implementation, not to time specific functions.
 
@@ -11,7 +11,7 @@ method summarize (stats) {
     // stats is a collection of count@time pairs
     // checks that all the counts are the same, removes outliers repeatedly
     // until no more remain, and prints a summary of the data that is left.
-    // It is necessary to remove outliers repeately because each removal reduces
+    // It is necessary to remove outliers repeatedly because each removal reduces
     // the inter-quartile-range, thus branding more of the data as outliers.
 }
     
@@ -34,7 +34,7 @@ method now {
 
 method time(aBlock) {
     // answers the time (in milliseconds) taken to execute aBlock.
-    // Typically, the result exhibits high variablity
+    // Typically, the result exhibits high variability
 }
 ```
 
@@ -89,7 +89,7 @@ The functions `request` and `selfRequest` do all of this inside a `try…catch�
 
 There are three sorts of reasons that an exception might be raised.  The first is that somewhere inside `meth`, a Grace block needs to **return** to the context from which this request was made (or an enclosing context).  This is handled by the `(ex.exctype === 'return')` branch of the **if**.  The second is that the body of `meth` raises a Grace Exception.  The third is that something went wrong, usually that `obj` has no method `methname`.  Both of the last two cases are dealt with in `handleRequestException`; in the case of a Grace exception, this function also pushes a frame onto the exceptions `exitstack`, which (if  the exception is not handled) will be used for debugging.
 
-Notice that there are no early returns, and no raised exceptions, in our definition of `ackermann(m,n)`, so we know that, for our benchmark program, the `try…catch` isn't necessary.  We can also omit to reset the linenumber in the `finally` clause — the lineNumber is used only for debugging.
+Notice that there are no early returns, and no raised exceptions, in our definition of `ackermann(m,n)`, so we know that, for our benchmark program, the `try…catch` isn't necessary.  We can also omit to reset the line number in the `finally` clause — the lineNumber is used only for debugging.
 
 The question that this experiment sets out to answer is: how much can we speed up the common case where the requested method exists, there is no early return, and no exception is raised.
 
@@ -113,14 +113,14 @@ This speeds things up to around 5800 requests/ms, or about 2.5 times the speed o
 
 ## Module *ackermann_nochecks*
 
-If you look at the generated code JavaScript code, you will  see that it is studded with checks for `undefined`.  How much do these slow things down?  Not much; the results from 
-Module *ackermann_nochecks* are essentially similar to those form Module *ackermann_plain*.  This is probably because the V8 compiler is already removing these checks.  It therefore does not seem worthwhile expending a lot of effort to remove them from the generated code — although this would make the generated code smaller, which might have its own benefits.
+If you look at the generated code JavaScript code, you will  see that it is studded with checks for `undefined`.  How much do these checks slow things down?  Not much; the results from
+Module *ackermann_nochecks* are essentially the same to those from Module *ackermann_plain*.  This is probably because the V8 compiler is already removing these checks.  It therefore does not seem worthwhile expending a lot of effort to remove them from the generated code — although this would make the generated code smaller, which might have its own benefits.
 
 ## Module *ackermann\_oo\_inline*
 
-Because the methods of a Grace object are not properties of the object itself, but of a separate `methods` object that it a property of the object (or its prototype), we can't use the JavaScript `object.method` notation to request methods directly.  (I call this "OO style".) What is the cost of extracting a function from an ancillary object and then calling it, rather than using JavaScripts objects idiomatically?  To put it another way: if we were to move the methods onto the object itself, what is the gain?
+Because the methods of a Grace object are not properties of the object itself, but instead properties of a separate `methods` object that is in turn a property of the object (or its prototype), we can't use the JavaScript `object.method` notation to request methods directly.  (I call this "OO style".) What is the cost of extracting a function from an ancillary object and then calling it, rather than using JavaScripts objects idiomatically?  To put it another way: if we were to move the methods onto the object itself, what would be the gain?
 
-The module *ackermann\_oo\_inline* answers this question, by patching the objects in another `native "js" code ‹…›` insert.  (Note that all of these native code patches may not work for future versions of _minigrace_, which might generate different JavaScript code sequences.)  In this version, the same request of `n + 1` looks like this:
+The module *ackermann\_oo\_inline* answers this question, by patching the objects in yet another `native "js" code ‹…›` insert to create a duplicate method reference.  (Note that all of these native code patches may not work for future versions of _minigrace_, which might generate different JavaScript code sequences.)  In this version, the same request of `n + 1` looks like this:
 
 ```
 var sum4 = var_n["+(1)"]([1], new GraceNum(1));
@@ -128,7 +128,7 @@ var sum4 = var_n["+(1)"]([1], new GraceNum(1));
 
 The speedup for this version is significant: over 7600 requests/ms, 3.2 times better than the plain version.
 
-Notice that the confidential checks are no longer being performed, because the method function is never made available directly.
+Notice that the confidential checks are no longer being performed, because the method function is never made available directly.  We would need to find a new way of checking for confidential methods being invoked from outside.
 
 ## Could we use the OO form in production code?
 
@@ -147,9 +147,11 @@ Prefix or suffix each Grace method name with a unique sigil, such as `_G_`, `�
 
 ### Confidentiality
 
-This is easily dealt with.  In addition to representing confidentiality as an attribute of the method function, compile a check inside the method — if and only if the method is confidential.  Make the first argument to the method a Boolean indicating whether the request is external (`true`) or on self (`false`).  Then, in confidential methods, raise an error if the first argument is false.
+Confidentiality is easily dealt with.  In addition to representing confidentiality as an attribute of the method function, we would also compile a check inside the method — if and only if the method is confidential.  We then make the first argument to the method a Boolean indicating whether the request is external (`true`) (corresponding to the current `request`), or on self (`false`)  (corresponding to the current `selfRequest`) .  Then, in confidential methods, raise an error if the first argument is false.
 
-When an alias is created, the alias is always confidential. This can be implemented by wrapping the method function in a _condifential wrapper_ function that checks that the first argument is `true`, and then calls the method function.  This is similar to the current scheme, where the wrapping function does nothing, but has a `confidential` property with value `true`.
+I'm suggesting that we use the first argument for this purpose because this position is currently occupied by the unused `argcv` parameter, which represents for the no-longer-used _argument count vector_.
+
+When an alias is created, the alias is always confidential. This can be implemented by wrapping the method function in a _confidential wrapper_ function that checks that the first argument is `true`, and then calls the method function.  This is similar to the current scheme, where the wrapping function does nothing, but has a `confidential` property with value `true`.
 
 ### Early Returns
 
@@ -185,15 +187,15 @@ Thus, saving and restoring line numbers need not be a function of the `request` 
 
 ### Dealing with Exceptions
 
-Removing the `try…catch` statement around every request actually makes this easier!  Now, an exception handler will exist in the JavaScript *only* where there is an exception handler in the Grace source code, so exceptions will propogate to the right place without any further ado.
+Removing the `try…catch` statement around every request actually makes this easier!  Now, an exception handler will exist in the JavaScript *only* where there is an exception handler in the Grace source code, so exceptions will propagate to the right place without any further ado.
 
-### Dealing with `NoSuchMethod` and undefined target Exceptions
+### Dealing with `NoSuchMethod` and Undefined Target Exceptions
 
-This may be the trickiest problem to solve. Fortunately the performance of this check is not important, if it can be moved out of the commone case.  
+This may be the trickiest problem to solve. Fortunately the performance of this check is not important, if it can be moved out of the common case.  
 
-If it were just a matter of trapping the error and producing a debugging stack trace, the best solution might be to let the JavaScript exception propagate to the top level, and then translate the JavaScript stack trace into a Grace stack trace.  JavaScript sourcemaps can help with this.
+If it were just a matter of trapping the error and producing a debugging stack trace, the best solution might be to let the JavaScript exception propagate to the top level, and then translate the JavaScript stack trace into a Grace stack trace.  JavaScript source-maps can help with this.
 
-However, things aren't quite so simple. We also have to permit the association of code to handle `NoSuchMethod` exceptions inside an object using the mirror method `whenNoMethodDo`.  Execution of this handler requires the target object and the name of the requested method, as well as the aguments; the result of the haldler has to be used in place of the result of the normal method request. This implies that `NoSuchMethod` must be detected *before* the stack is unwound.
+However, things aren't quite so simple. We also have to permit the association of code to handle `NoSuchMethod` exceptions inside an object using the _mirror_ method `whenNoMethodDo`.  Execution of this handler requires the target object and the name of the requested method, as well as the arguments; the result of the handler has to be used in place of the result of the normal method request. This implies that `NoSuchMethod` must be detected *before* the stack is unwound.
 
 One approach would be to test for the presence of the method before each JavaScript method call, using code something like this:
 
@@ -206,12 +208,13 @@ else
 
 Here `dealWithNoMethod` either invokes `var_n`'s no such method handler, or raises a `NoSuchMethod` exception.
 
-An alternative would be to test for the existance of a `noSuchMethodHandler`, but this would still leave us the problem of pawing through the stack to report the `NoSuchMethod` exception.  Moreover, the above check is more easilly optimized away, because the JavaScript engine must already check for the presence of a function of the correct name before executing it.
+An alternative would be to test for the existence of a `noSuchMethodHandler`, but this would still leave us the problem of pawing through the stack to report the `NoSuchMethod` exception.  Moreover, the above check is more easily optimized away, because the JavaScript engine must already check for the presence of a function of the correct name before executing it.
 
 A real compiler could of course do some flow analysis and, in many cases, remove the check as unnecessary, because the target object would be known to possess the requested method.  
 
-This explicit check, and the check on the return value,  would cost us some fraction of the speedup obtained from inlining the request in the first place.  The question that remains is: how much?
+This explicit check, and the check on the return value, would cost us some fraction of the speedup obtained from inlining the request in the first place.  The question that remains is: how much?  A quick experiment (module *ackermann_oo_inline+methodCheck.grace*) shows that the existence check slows things down by less than 2%, which
+is less than the variablility in our measurements.  Adding both ckecks actually speeding things up slightly (compared to the inlined oo-style calls with no checks), which shows, I think, that V8 is doing a great job removing these checks!
 
 # Potential Wins
 
-The file _results.txt_ summarizes the best case speedups that could possibly be obtained, since the hand-generated code does not contain any of the checks that would be necessary for a fully-general solution.
+The file _results.txt_ summarizes the best case speedups that could possibly be obtained, since these small benchmarks do not generate any of the situations that trigger the branches.   However, this also the common case in real code.  It seems,  though, that without any major changes to the object representation, we could speed-up _minigrace_ from around 2300 requests/ms to 7000 requests/ms.
