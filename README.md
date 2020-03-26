@@ -78,10 +78,10 @@ function request(obj, methname, ...args) {
     return ret;
 }
 ```
-This function 
-    1. finds the requested method in the target object `ojb`'s `methods` object,
-    2. checks if the requested method is confidential, by looking at the method function's `confidential` property.
-    3. applies the method function to `obj` and the arguments.
+This function
+ 1. finds the requested method in the target object `ojb`'s `methods` object,
+ 2. checks if the requested method is confidential, by looking at the method function's `confidential` property.
+ 3. applies the method function to `obj` and the arguments.
 
 A second function, `selfRequest`, does essentially the same thing, but omits the check for confidentiality.  The `selfRequest` function is used when compiling requests on self.
 
